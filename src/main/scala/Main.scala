@@ -12,18 +12,14 @@ import java.util.Properties
 object Main {
   def main(args: Array[String]): Unit = {
     println("Hello world!")
-    //Logger.getLogger("org").setLevel(Level.WARN)
+    Logger.getLogger("org").setLevel(Level.WARN)
 
-    if (args.length != 6) {
-      println("Usage: spark-submit --class org.itc.com.Main --master yarn churn_data.jar input1.csv output1.csv input2.csv output2.csv input3.csv output3.csv")
-      System.exit(1)
-    }
 
     // Create a SparkSession
     val spark = SparkSession.builder()
       .appName("Data_cleaning")
-      .enableHiveSupport()
-      // .master("local[1]")
+     // .enableHiveSupport()
+      .master("local[1]")
       .getOrCreate()
 
     // accounts table Dataframe Schema
@@ -33,7 +29,8 @@ object Main {
     // loading dataset
     var accounts_df = spark.read.option("header", "true")
       .schema(accountSchemaddl)
-      .csv(args(0))
+    //  .csv(args(0))
+    .csv("D:\\spark_code\\untitled\\Project-Input\\Accounts_data.csv")
 
     accounts_df.show()
     accounts_df.printSchema()
@@ -84,7 +81,9 @@ object Main {
     // Load the dataset with the defined schema
     var customers_df = spark.read.option("header", "true")
       .schema(customersSchemaddl)
-      .csv(args(2))
+    //  .csv(args(2))
+    .csv("D:\\spark_code\\untitled\\Project-Input\\Customers_data.csv")
+
     customers_df.filter(customers_df.columns.map(col(_).isNull).reduce(_ || _)).show()
 
     // Show DataFrame schema and contents
@@ -119,7 +118,9 @@ object Main {
     var transactionsdf = spark.read
       .option("header", "true")
       .schema(transactionSchema)
-      .csv(args(4))
+    //  .csv(args(4))
+    .csv("D:\\spark_code\\untitled\\Project-Input\\Transactions_data.csv")
+
     transactionsdf.filter(transactionsdf.columns.map(col(_).isNull).reduce(_ || _)).show()
 
     transactionsdf.show()
@@ -135,9 +136,14 @@ object Main {
     transaction_cleaned_df.printSchema()
     transaction_cleaned_df.show()
     // newDF.coalesce(1).write.option("header","true").csv(args(1))
-    Accounts_cleaned_df.coalesce(1).write.option("header", "true").csv(args(1))
-    customers_cleaned_df.coalesce(1).write.option("header", "true").csv(args(3))
-    transaction_cleaned_df.coalesce(1).write.option("header", "true").csv(args(5))
+    Accounts_cleaned_df.coalesce(1).write.option("header", "true").csv("D:\\spark_code\\untitled\\Project-Input\\Accounts_df")
+    customers_cleaned_df.coalesce(1).write.option("header", "true").csv("D:\\spark_code\\untitled\\Project-Input\\Customers_df")
+    transaction_cleaned_df.coalesce(1).write.option("header", "true").csv("D:\\spark_code\\untitled\\Project-Input\\Transactions_df")
+
+//    Accounts_cleaned_df.coalesce(1).write.option("header", "true").csv(args(1))
+//    customers_cleaned_df.coalesce(1).write.option("header", "true").csv(args(3))
+//    transaction_cleaned_df.coalesce(1).write.option("header", "true").csv(args(5))
+
 
     //creates a new table with name customer_churn_data1 and load newDF data to it
     Accounts_cleaned_df.write.format("jdbc").option("url","jdbc:postgresql://ec2-3-9-191-104.eu-west-2.compute.amazonaws.com:5432/testdb")
@@ -150,16 +156,16 @@ object Main {
       .option("dbtable","transactions_table").option("driver","org.postgresql.Driver").option("user", "consultants")
       .option("password", "WelcomeItc@2022").save()
 
-println("data base done")
+//    println("data base done")
+//
+//    println("hive started")
 
-    println("hive started")
-
-    Accounts_cleaned_df.write.mode("overwrite").saveAsTable("ukusmar.accounts_table")
-    println("after acocunt_table in hive")
-    customers_cleaned_df.write.mode("overwrite").saveAsTable("ukusmar.customers_table")
-    println("after customers_table in hive")
-    transaction_cleaned_df.write.mode("overwrite").saveAsTable("ukusmar.transactions_table")
-    println("after transaction_table in hive ")
+//    Accounts_cleaned_df.write.mode("overwrite").saveAsTable("ukusmar.accounts_table")
+//    println("after acocunt_table in hive")
+//    customers_cleaned_df.write.mode("overwrite").saveAsTable("ukusmar.customers_table")
+//    println("after customers_table in hive")
+//    transaction_cleaned_df.write.mode("overwrite").saveAsTable("ukusmar.transactions_table")
+//    println("after transaction_table in hive ")
 
   }
 }

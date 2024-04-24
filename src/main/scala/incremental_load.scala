@@ -13,16 +13,16 @@ object incremental_load extends App {
 
   Logger.getLogger("org").setLevel(Level.WARN)
 
-  if (args.length != 6) {
-    println("Usage: spark-submit --class org.itc.com.Main --master yarn churn_data.jar input1.csv output1.csv input2.csv output2.csv input3.csv output3.csv")
-    System.exit(1)
-  }
+//  if (args.length != 6) {
+//    println("Usage: spark-submit --class org.itc.com.Main --master yarn churn_data.jar input1.csv output1.csv input2.csv output2.csv input3.csv output3.csv")
+//    System.exit(1)
+//  }
 
   // Create a SparkSession
   val spark = SparkSession.builder()
     .appName("Data_Incremental")
-    .enableHiveSupport()
-    //.master("local[1]")
+    //.enableHiveSupport()
+    .master("local[1]")
     .getOrCreate()
 
 
@@ -46,8 +46,8 @@ object incremental_load extends App {
 
   var accounts_df = spark.read.option("header", "true")
     .schema(accountSchemaddl)
-    .csv(args(0))
-  //.csv("D:\\spark_code\\untitled\\Project-Input\\Accounts_add.csv")
+  //  .csv(args(0))
+  .csv("D:\\spark_code\\untitled\\Project-Input\\Accounts_add.csv")
 
   accounts_df.show()
   accounts_df.printSchema()
@@ -98,8 +98,8 @@ object incremental_load extends App {
   // Load the dataset with the defined schema
   var customers_df = spark.read.option("header", "true")
     .schema(customersSchemaddl)
-    .csv(args(1))
-   // .csv("D:\\spark_code\\untitled\\Project-Input\\Customers_add.csv")
+   // .csv(args(1))
+    .csv("D:\\spark_code\\untitled\\Project-Input\\Customers_add.csv")
 
   customers_df.filter(customers_df.columns.map(col(_).isNull).reduce(_ || _)).show()
 
@@ -135,8 +135,8 @@ object incremental_load extends App {
   var transactionsdf = spark.read
     .option("header", "true")
     .schema(transactionSchema)
-    .csv(args(2))
-    //.csv("D:\\spark_code\\untitled\\Project-Input\\Transactions_add.csv")
+   // .csv(args(2))
+    .csv("D:\\spark_code\\untitled\\Project-Input\\Transactions_add.csv")
 
   transactionsdf.filter(transactionsdf.columns.map(col(_).isNull).reduce(_ || _)).show()
 
@@ -172,65 +172,35 @@ object incremental_load extends App {
   transaction_cleaned_df.createOrReplaceTempView("transactions_add")
   spark.sql("select * from transactions_add").show(5)
 
-  val combined_accounts_df = spark.sql(
-    """
-      |SELECT *
-      |FROM accounts_full
-      |UNION ALL
-      |SELECT *
-      |FROM accounts_add
-      |""".stripMargin)
 
-
-
-  val combined_customers_df = spark.sql(
-    """
-      |SELECT *
-      |FROM customers_full
-      |UNION ALL
-      |SELECT *
-      |FROM customers_add
-      |""".stripMargin)
-
-  val combined_transaction_df = spark.sql(
-    """
-      |SELECT *
-      |FROM transactions_full
-      |UNION ALL
-      |SELECT *
-      |FROM transactions_add
-      |""".stripMargin)
-
-
-
-//  combined_accounts_df.show()
-//  combined_customers_df.show()
-//  combined_transaction_df.show()
-
-  combined_accounts_df.write.format("jdbc").option("url","jdbc:postgresql://ec2-3-9-191-104.eu-west-2.compute.amazonaws.com:5432/testdb")
+  Accounts_cleaned_df.write.format("jdbc").option("url","jdbc:postgresql://ec2-3-9-191-104.eu-west-2.compute.amazonaws.com:5432/testdb")
     .option("dbtable","accounts_table").option("driver","org.postgresql.Driver").option("user", "consultants")
-    .option("password", "WelcomeItc@2022").mode("overwrite").save()
-  combined_customers_df.write.format("jdbc").option("url","jdbc:postgresql://ec2-3-9-191-104.eu-west-2.compute.amazonaws.com:5432/testdb")
+    .option("password", "WelcomeItc@2022").mode("append").save()
+  customers_cleaned_df.write.format("jdbc").option("url","jdbc:postgresql://ec2-3-9-191-104.eu-west-2.compute.amazonaws.com:5432/testdb")
     .option("dbtable","customers_table").option("driver","org.postgresql.Driver").option("user", "consultants")
-    .option("password", "WelcomeItc@2022").mode("overwrite").save()
-  combined_transaction_df.write.format("jdbc").option("url","jdbc:postgresql://ec2-3-9-191-104.eu-west-2.compute.amazonaws.com:5432/testdb")
+    .option("password", "WelcomeItc@2022").mode("append").save()
+  transaction_cleaned_df.write.format("jdbc").option("url","jdbc:postgresql://ec2-3-9-191-104.eu-west-2.compute.amazonaws.com:5432/testdb")
     .option("dbtable","transactions_table").option("driver","org.postgresql.Driver").option("user", "consultants")
-    .option("password", "WelcomeItc@2022").mode("overwrite").save()
-
-  println("data base done")
+    .option("password", "WelcomeItc@2022").mode("append").save()
+//
+//  println("data base done")
 
   println("hive started")
 
-  combined_accounts_df.write.mode("overwrite").saveAsTable("ukusmar.accounts_table")
-  println("after acocunt_table in hive")
-  combined_customers_df.write.mode("overwrite").saveAsTable("ukusmar.customers_table")
-  println("after customers_table in hive")
-  combined_transaction_df.write.mode("overwrite").saveAsTable("ukusmar.transactions_table")
-  println("after transaction_table in hive ")
+//  combined_accounts_df.write.mode("overwrite").saveAsTable("ukusmar.accounts_table")
+//  println("after acocunt_table in hive")
+//  combined_customers_df.write.mode("overwrite").saveAsTable("ukusmar.customers_table")
+//  println("after customers_table in hive")
+//  combined_transaction_df.write.mode("overwrite").saveAsTable("ukusmar.transactions_table")
+//  println("after transaction_table in hive ")
+//
+//  combined_accounts_df.coalesce(1).write.mode("overwrite").option("header", "true").csv(args(3))
+//  combined_customers_df.coalesce(1).write.mode("overwrite").option("header", "true").csv(args(4))
+//  combined_transaction_df.coalesce(1).write.mode("overwrite").option("header", "true").csv(args(5))
 
-  combined_accounts_df.coalesce(1).write.mode("overwrite").option("header", "true").csv(args(3))
-  combined_customers_df.coalesce(1).write.mode("overwrite").option("header", "true").csv(args(4))
-  combined_transaction_df.coalesce(1).write.mode("overwrite").option("header", "true").csv(args(5))
+//  combined_accounts_df.coalesce(1).write.mode("append").option("header", "true").csv("D:\\spark_code\\untitled\\Project-Input\\Accounts_df")
+//  combined_customers_df.coalesce(1).write.mode("append").option("header", "true").csv("D:\\spark_code\\untitled\\Project-Input\\Customers_df")
+//  combined_transaction_df.coalesce(1).write.mode("append").option("header", "true").csv("D:\\spark_code\\untitled\\Project-Input\\Transactions_df")
 
 
 }
