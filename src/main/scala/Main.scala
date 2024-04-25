@@ -1,4 +1,4 @@
-package org.itc.com
+//package org.itc.com
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._
@@ -22,7 +22,7 @@ object Main {
     val spark = SparkSession.builder()
       .appName("Data_cleaning")
      // .enableHiveSupport()
-      .master("local[1]")
+     // .master("local[1]")
       .getOrCreate()
 
     // accounts table Dataframe Schema
