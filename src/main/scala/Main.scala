@@ -13,10 +13,10 @@ object Main {
   def main(args: Array[String]): Unit = {
     println("Hello world!")
     Logger.getLogger("org").setLevel(Level.WARN)
-    if (args.length != 6) {
-          println("Usage: spark-submit --class org.itc.com.Main --master yarn churn_data.jar input1.csv output1.csv input2.csv output2.csv input3.csv output3.csv")
-          System.exit(1)
-        }
+//    if (args.length != 6) {
+//          println("Usage: spark-submit --class org.itc.com.Main --master yarn churn_data.jar input1.csv output1.csv input2.csv output2.csv input3.csv output3.csv")
+//          System.exit(1)
+//        }
 
     // Create a SparkSession
     val spark = SparkSession.builder()
@@ -84,7 +84,7 @@ object Main {
     // Load the dataset with the defined schema
     var customers_df = spark.read.option("header", "true")
       .schema(customersSchemaddl)
-      .csv(args(2))
+      .csv(args(1))
    // .csv("D:\\spark_code\\untitled\\Project-Input\\Customers_data.csv")
 
     customers_df.filter(customers_df.columns.map(col(_).isNull).reduce(_ || _)).show()
@@ -121,7 +121,7 @@ object Main {
     var transactionsdf = spark.read
       .option("header", "true")
       .schema(transactionSchema)
-      .csv(args(4))
+      .csv(args(2))
     //.csv("D:\\spark_code\\untitled\\Project-Input\\Transactions_data.csv")
 
     transactionsdf.filter(transactionsdf.columns.map(col(_).isNull).reduce(_ || _)).show()
@@ -143,9 +143,9 @@ object Main {
     customers_cleaned_df.coalesce(1).write.option("header", "true").csv("D:\\spark_code\\untitled\\Project-Input\\Customers_df")
     transaction_cleaned_df.coalesce(1).write.option("header", "true").csv("D:\\spark_code\\untitled\\Project-Input\\Transactions_df")
 
-    Accounts_cleaned_df.coalesce(1).write.option("header", "true").csv(args(1))
-    customers_cleaned_df.coalesce(1).write.option("header", "true").csv(args(3))
-    transaction_cleaned_df.coalesce(1).write.option("header", "true").csv(args(5))
+   // Accounts_cleaned_df.coalesce(1).write.option("header", "true").csv(args(1))
+    //customers_cleaned_df.coalesce(1).write.option("header", "true").csv(args(3))
+  //  transaction_cleaned_df.coalesce(1).write.option("header", "true").csv(args(5))
 
 
     //creates a new table with name customer_churn_data1 and load newDF data to it
